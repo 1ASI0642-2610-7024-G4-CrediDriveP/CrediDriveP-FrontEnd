@@ -5,4 +5,9 @@ class ApiConstants {
 
   static const String login = '/users/login';
   static const String register = '/users/register';
+
+  static const String vehicles = '/vehicles';
+  static const String loanPlans = '/loan-plans';
+  static const String simulate = '/loans/simulate';
+  static const String loans = '/loans';
 }

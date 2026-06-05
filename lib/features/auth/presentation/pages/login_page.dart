@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:credidrivep_frontend_flutter/core/api/api_client.dart';
+import 'package:credidrivep_frontend_flutter/features/loans/presentation/pages/saved_simulations_page.dart';
 
 import 'register_page.dart';
 import '../blocs/auth_bloc.dart';
@@ -35,6 +37,14 @@ class _LoginPageState extends State<LoginPage> {
           if (state is AuthSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Bienvenido ${state.user.name}")),
+            );
+            // Tras login OK, ir al listado de simulaciones (Cap 5).
+            final apiClient = context.read<ApiClient>();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SavedSimulationsPage(apiClient: apiClient),
+              ),
             );
           }
 
