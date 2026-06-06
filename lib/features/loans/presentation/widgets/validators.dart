@@ -1,7 +1,7 @@
 /// Reglas de validación electrónica en tiempo real.
 ///
 /// Cada función devuelve `null` si el valor es válido, o un mensaje de error
-/// pa mostrar bajo el campo (Material `errorText`).
+/// para mostrar bajo el campo (Material `errorText`).
 class FieldValidators {
   static String? tea(String v) {
     if (v.isEmpty) return null;

@@ -6,7 +6,7 @@ import '../models/simulation_result_model.dart';
 import '../../domain/entities/simulation_result.dart';
 import 'loan_remote_data_source.dart';
 
-/// Implementación mock pa demo sin backend ni MySQL.
+/// Implementación mock para demo sin backend ni MySQL.
 ///
 /// Permite ver el diseño completo del Cap 5 con datos hardcodeados.
 /// Para producción usar [LoanRemoteDataSourceImpl].

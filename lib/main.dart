@@ -1,4 +1,5 @@
 import 'package:credidrivep_frontend_flutter/core/api/api_client.dart';
+import 'package:credidrivep_frontend_flutter/core/theme/app_theme.dart';
 import 'package:credidrivep_frontend_flutter/features/auth/data/datasources/auth_remote_data_soruce_impl.dart';
 import 'package:credidrivep_frontend_flutter/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:credidrivep_frontend_flutter/features/auth/domain/usecases/login_user.dart';
@@ -18,7 +19,7 @@ import 'package:provider/provider.dart';
 /// `true`  → la app usa datos hardcoded (vehículos, planes, simulaciones).
 ///           Permite mostrar el diseño sin backend ni MySQL.
 /// `false` → la app llama al backend FastAPI en `BASE_URL`.
-const bool DEMO_MODE = true;
+const bool DEMO_MODE = false;
 
 void main() {
   final dio = Dio();
@@ -68,9 +69,11 @@ class MainApp extends StatelessWidget {
           ),
         ),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: LoginPage(),
+        title: 'CrediDriveP',
+        theme: AppTheme.light(),
+        home: const LoginPage(),
       ),
     );
   }
