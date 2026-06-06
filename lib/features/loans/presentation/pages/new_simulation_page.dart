@@ -1,9 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:credidrivep_frontend_flutter/core/api/api_client.dart';
 
-import '../../data/datasources/loan_remote_data_source_impl.dart';
+import '../../data/datasources/loan_remote_data_source.dart';
 import '../../domain/entities/loan_plan.dart';
 import '../../domain/entities/vehicle.dart';
 import '../../domain/entities/simulation_result.dart';
@@ -13,16 +12,15 @@ import '../widgets/validators.dart';
 import 'results_page.dart';
 
 class NewSimulationPage extends StatefulWidget {
-  final ApiClient apiClient;
-  const NewSimulationPage({super.key, required this.apiClient});
+  final LoanRemoteDataSource dataSource;
+  const NewSimulationPage({super.key, required this.dataSource});
 
   @override
   State<NewSimulationPage> createState() => _NewSimulationPageState();
 }
 
 class _NewSimulationPageState extends State<NewSimulationPage> {
-  late final LoanRemoteDataSourceImpl _remote =
-      LoanRemoteDataSourceImpl(client: widget.apiClient);
+  LoanRemoteDataSource get _remote => widget.dataSource;
 
   final _nameCtrl = TextEditingController();
   final _downCtrl = TextEditingController();

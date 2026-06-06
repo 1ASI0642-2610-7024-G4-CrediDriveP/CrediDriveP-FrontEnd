@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:credidrivep_frontend_flutter/core/api/api_client.dart';
+import 'package:provider/provider.dart';
+import 'package:credidrivep_frontend_flutter/features/loans/data/datasources/loan_remote_data_source.dart';
 import 'package:credidrivep_frontend_flutter/features/loans/presentation/pages/saved_simulations_page.dart';
+import 'package:credidrivep_frontend_flutter/main.dart' show DEMO_MODE;
 
 import 'register_page.dart';
 import '../blocs/auth_bloc.dart';
@@ -19,7 +21,21 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
+  void _goToApp() {
+    final ds = context.read<LoanRemoteDataSource>();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SavedSimulationsPage(dataSource: ds),
+      ),
+    );
+  }
+
   void login() {
+    if (DEMO_MODE) {
+      _goToApp();
+      return;
+    }
     context.read<AuthBloc>().add(
           LoginEvent(
             emailController.text.trim(),
@@ -31,23 +47,15 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
+      appBar: AppBar(title: const Text('CrediDriveP — Login')),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Bienvenido ${state.user.name}")),
+              SnackBar(content: Text('Bienvenido ${state.user.name}')),
             );
-            // Tras login OK, ir al listado de simulaciones (Cap 5).
-            final apiClient = context.read<ApiClient>();
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => SavedSimulationsPage(apiClient: apiClient),
-              ),
-            );
+            _goToApp();
           }
-
           if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -60,27 +68,48 @@ class _LoginPageState extends State<LoginPage> {
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (DEMO_MODE)
+                  Card(
+                    color: Colors.amber.shade100,
+                    child: const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Text(
+                          'DEMO MODE activo. Cualquier credencial entra a la app. '
+                          'Datos hardcoded — no hay backend.'),
+                    ),
+                  ),
+                const SizedBox(height: 8),
                 TextField(
                   controller: emailController,
-                  decoration: const InputDecoration(labelText: "Email"),
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
+                const SizedBox(height: 8),
                 TextField(
                   controller: passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: "Password"),
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-                const SizedBox(height: 20),
-
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: isLoading ? null : login,
                   child: isLoading
-                      ? const CircularProgressIndicator()
-                      : const Text("Login"),
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child:
+                              CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(DEMO_MODE ? 'Entrar (demo)' : 'Login'),
                 ),
-
-                const SizedBox(height: 10),
-
+                const SizedBox(height: 8),
                 TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -90,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     );
                   },
-                  child: const Text("Ir a Register"),
+                  child: const Text('Ir a Register'),
                 ),
               ],
             ),

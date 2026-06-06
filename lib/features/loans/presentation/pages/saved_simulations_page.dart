@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:credidrivep_frontend_flutter/core/api/api_client.dart';
 
-import '../../data/datasources/loan_remote_data_source_impl.dart';
+import '../../data/datasources/loan_remote_data_source.dart';
 import 'new_simulation_page.dart';
 
 class SavedSimulationsPage extends StatefulWidget {
-  final ApiClient apiClient;
-  const SavedSimulationsPage({super.key, required this.apiClient});
+  final LoanRemoteDataSource dataSource;
+  const SavedSimulationsPage({super.key, required this.dataSource});
 
   @override
   State<SavedSimulationsPage> createState() => _SavedSimulationsPageState();
 }
 
 class _SavedSimulationsPageState extends State<SavedSimulationsPage> {
-  late final LoanRemoteDataSourceImpl _remote =
-      LoanRemoteDataSourceImpl(client: widget.apiClient);
+  LoanRemoteDataSource get _remote => widget.dataSource;
   List<Map<String, dynamic>> _items = [];
   bool _loading = true;
 
@@ -47,7 +45,7 @@ class _SavedSimulationsPageState extends State<SavedSimulationsPage> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => NewSimulationPage(apiClient: widget.apiClient),
+              builder: (_) => NewSimulationPage(dataSource: widget.dataSource),
             ),
           );
           _refresh();
