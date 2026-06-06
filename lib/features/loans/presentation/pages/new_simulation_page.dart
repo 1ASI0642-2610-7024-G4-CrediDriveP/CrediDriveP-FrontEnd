@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:credidrivep_frontend_flutter/core/api/api_client.dart';
 
-import '../../data/datasources/loan_remote_data_source_impl.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../data/datasources/loan_remote_data_source.dart';
 import '../../domain/entities/loan_plan.dart';
 import '../../domain/entities/vehicle.dart';
 import '../../domain/entities/simulation_result.dart';
@@ -13,16 +13,15 @@ import '../widgets/validators.dart';
 import 'results_page.dart';
 
 class NewSimulationPage extends StatefulWidget {
-  final ApiClient apiClient;
-  const NewSimulationPage({super.key, required this.apiClient});
+  final LoanRemoteDataSource dataSource;
+  const NewSimulationPage({super.key, required this.dataSource});
 
   @override
   State<NewSimulationPage> createState() => _NewSimulationPageState();
 }
 
 class _NewSimulationPageState extends State<NewSimulationPage> {
-  late final LoanRemoteDataSourceImpl _remote =
-      LoanRemoteDataSourceImpl(client: widget.apiClient);
+  LoanRemoteDataSource get _remote => widget.dataSource;
 
   final _nameCtrl = TextEditingController();
   final _downCtrl = TextEditingController();
@@ -198,7 +197,7 @@ class _NewSimulationPageState extends State<NewSimulationPage> {
                   controller: _incomeCtrl,
                   helpMessage: HelpText.monthlyIncome,
                   helperExample:
-                      'Sirve pa validar que la cuota ≤ 30% del ingreso',
+                      'Sirve para validar que la cuota ≤ 30% del ingreso',
                   keyboardType: TextInputType.number,
                   suffix: _selectedPlan?.currency ?? 'PEN',
                   onChanged: (_) => _recomputePreview(),
@@ -265,24 +264,42 @@ class _NewSimulationPageState extends State<NewSimulationPage> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Wrap(
-          spacing: 16,
-          runSpacing: 8,
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _chip('TEA', '${(p.interestRate * 100).toStringAsFixed(2)}%',
-                HelpText.tea),
-            _chip('Plazo', '${p.termMonths} meses', HelpText.term),
-            _chip('Gracia', '${p.graceType} (${p.graceMonths}m)',
-                HelpText.graceType),
-            _chip('Método', p.paymentMethod, HelpText.paymentMethod),
-            if (p.balloonPercentage != null)
-              _chip(
-                  'Balloon',
-                  '${(p.balloonPercentage! * 100).toStringAsFixed(1)}%',
-                  HelpText.balloonPercentage),
-            _chip('COK', '${(p.cokAnnual * 100).toStringAsFixed(2)}%',
-                HelpText.cok),
+            const Row(
+              children: [
+                Icon(Icons.account_balance_rounded,
+                    size: 18, color: AppTheme.brandPrimary),
+                SizedBox(width: 6),
+                Text('Resumen del plan',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: AppTheme.textPrimary)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('TEA', '${(p.interestRate * 100).toStringAsFixed(2)}%',
+                    HelpText.tea),
+                _chip('Plazo', '${p.termMonths} meses', HelpText.term),
+                _chip('Gracia', '${p.graceType} (${p.graceMonths}m)',
+                    HelpText.graceType),
+                _chip('Método', p.paymentMethod, HelpText.paymentMethod),
+                if (p.balloonPercentage != null)
+                  _chip(
+                      'Balloon',
+                      '${(p.balloonPercentage! * 100).toStringAsFixed(1)}%',
+                      HelpText.balloonPercentage),
+                _chip('COK', '${(p.cokAnnual * 100).toStringAsFixed(2)}%',
+                    HelpText.cok),
+              ],
+            ),
           ],
         ),
       ),
@@ -294,66 +311,190 @@ class _NewSimulationPageState extends State<NewSimulationPage> {
       message: help,
       triggerMode: TooltipTriggerMode.tap,
       showDuration: const Duration(seconds: 6),
-      child: Chip(
-        label: Text('$label: $value'),
-        backgroundColor: Colors.blue.shade50,
-        avatar: const Icon(Icons.help_outline, size: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.textPrimary,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      textStyle: const TextStyle(color: Colors.white, fontSize: 12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppTheme.brandPrimary.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppTheme.brandPrimary.withOpacity(0.2)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.help_outline_rounded,
+                size: 14, color: AppTheme.brandPrimaryDark),
+            const SizedBox(width: 4),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                    color: AppTheme.brandPrimaryDark,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600),
+                children: [
+                  TextSpan(text: '$label '),
+                  TextSpan(
+                    text: value,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _stepHeader(int n, String title) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.only(top: 8, bottom: 12),
         child: Row(
           children: [
-            CircleAvatar(radius: 14, child: Text('$n')),
-            const SizedBox(width: 8),
-            Text(title,
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.brandPrimary, AppTheme.brandPrimaryDark],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '$n',
                 style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16)),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+                color: AppTheme.textPrimary,
+                letterSpacing: -0.2,
+              ),
+            ),
           ],
         ),
       );
 
   Widget _previewCard() {
     if (_previewCuota == null) {
-      return Card(
-        color: Colors.grey.shade100,
-        child: const Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-              'Completa vehículo, plan y cuota inicial pa ver una vista previa.'),
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.black.withOpacity(0.06)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.lightbulb_outline_rounded,
+                color: AppTheme.textSecondary.withOpacity(0.6)),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Completa vehículo, plan y cuota inicial para ver una vista previa.',
+                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+              ),
+            ),
+          ],
         ),
       );
     }
     final currency = _selectedPlan?.currency ?? 'PEN';
-    return Card(
-      color:
-          _previewWarning == null ? Colors.green.shade50 : Colors.orange.shade50,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Vista previa',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(
-              'Cuota base estimada: $currency ${_previewCuota!.toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Estimación sin seguros ni comisiones. El detalle aparecerá tras simular.',
-              style: TextStyle(fontSize: 12, color: Colors.black54),
-            ),
-            if (_previewWarning != null) ...[
-              const SizedBox(height: 8),
-              Text(_previewWarning!,
-                  style: const TextStyle(color: Colors.deepOrange)),
-            ],
-          ],
+    final isWarning = _previewWarning != null;
+    final accent = isWarning ? AppTheme.brandWarning : AppTheme.brandAccent;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [accent.withOpacity(0.16), accent.withOpacity(0.04)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: accent.withOpacity(0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isWarning ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded,
+                color: accent,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Vista previa',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Cuota base',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppTheme.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '$currency ${_previewCuota!.toStringAsFixed(2)}',
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.textPrimary,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Estimación sin seguros ni comisiones. El detalle completo aparece tras simular.',
+            style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+          ),
+          if (isWarning) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: accent.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.flag_rounded, size: 14, color: accent),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      _previewWarning!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: accent,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
