@@ -1,5 +1,5 @@
 /// Mensajes de ayuda contextual reutilizados en todos los formularios.
-/// Centralizados aquí pa que el copy financiero quede consistente.
+/// Centralizados aquí para que el copy financiero quede consistente.
 class HelpText {
   static const tea =
       'Tasa Efectiva Anual. Incluye la capitalización de intereses. '
@@ -40,6 +40,6 @@ class HelpText {
   static const dni =
       'Documento Nacional de Identidad. Debe ser 8 dígitos numéricos.';
   static const monthlyIncome =
-      'Ingreso mensual neto. Se usa pa validar capacidad de pago: '
+      'Ingreso mensual neto. Se usa para validar capacidad de pago: '
       'tu cuota no debe exceder el 30% de este ingreso.';
 }
