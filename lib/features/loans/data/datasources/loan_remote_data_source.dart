@@ -8,4 +8,6 @@ abstract class LoanRemoteDataSource {
   Future<SimulationResultModel> simulate(Map<String, dynamic> payload);
   Future<SimulationResultModel> createLoan(Map<String, dynamic> payload);
   Future<List<Map<String, dynamic>>> listLoans();
+  Future<SimulationResultModel?> getLoanDetail(int id);
+  Future<void> deleteLoan(int id);
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/mobile_shell.dart';
 import '../../domain/entities/simulation_result.dart';
 import '../widgets/help_text.dart';
 
@@ -13,7 +14,9 @@ class ResultsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: AppBar(title: Text(result.name)),
-      body: ListView(
+      body: MobileShell(
+        addBottomInset: true,
+        child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
           _heroCuota(),
@@ -46,6 +49,7 @@ class ResultsPage extends StatelessWidget {
           const SizedBox(height: 10),
           _scheduleTable(),
         ],
+      ),
       ),
     );
   }

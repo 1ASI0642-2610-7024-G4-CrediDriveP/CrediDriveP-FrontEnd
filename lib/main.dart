@@ -19,7 +19,7 @@ import 'package:provider/provider.dart';
 /// `true`  → la app usa datos hardcoded (vehículos, planes, simulaciones).
 ///           Permite mostrar el diseño sin backend ni MySQL.
 /// `false` → la app llama al backend FastAPI en `BASE_URL`.
-const bool DEMO_MODE = false;
+const bool DEMO_MODE = true;
 
 void main() {
   final dio = Dio();

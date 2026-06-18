@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:credidrivep_frontend_flutter/core/theme/app_theme.dart';
 import 'package:credidrivep_frontend_flutter/core/theme/brand_header.dart';
+import 'package:credidrivep_frontend_flutter/core/theme/mobile_shell.dart';
 import 'package:credidrivep_frontend_flutter/features/loans/data/datasources/loan_remote_data_source.dart';
 import 'package:credidrivep_frontend_flutter/features/loans/presentation/pages/saved_simulations_page.dart';
 import 'package:credidrivep_frontend_flutter/main.dart' show DEMO_MODE;
@@ -67,12 +68,10 @@ class _LoginPageState extends State<LoginPage> {
         builder: (context, state) {
           final isLoading = state is AuthLoading;
           return SafeArea(
-            child: Center(
+            child: MobileShell(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 420),
-                  child: Column(
+                child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: 12),
@@ -179,7 +178,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ],
                   ),
-                ),
               ),
             ),
           );

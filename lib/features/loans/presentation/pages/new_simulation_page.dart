@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/mobile_shell.dart';
 import '../../data/datasources/loan_remote_data_source.dart';
 import '../../domain/entities/loan_plan.dart';
 import '../../domain/entities/vehicle.dart';
@@ -143,7 +144,9 @@ class _NewSimulationPageState extends State<NewSimulationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Nueva simulación')),
-      body: _loading
+      body: MobileShell(
+        addBottomInset: true,
+        child: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(16),
@@ -252,6 +255,7 @@ class _NewSimulationPageState extends State<NewSimulationPage> {
                 ),
               ],
             ),
+      ),
     );
   }
 
