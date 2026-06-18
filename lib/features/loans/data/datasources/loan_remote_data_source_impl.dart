@@ -39,4 +39,16 @@ class LoanRemoteDataSourceImpl implements LoanRemoteDataSource {
     final r = await client.get(ApiConstants.loans);
     return (r.data as List).cast<Map<String, dynamic>>();
   }
+
+  @override
+  Future<SimulationResultModel?> getLoanDetail(int id) async {
+    final r = await client.get('${ApiConstants.loans}/$id/detail');
+    if (r.data == null) return null;
+    return SimulationResultModel.fromJson(r.data);
+  }
+
+  @override
+  Future<void> deleteLoan(int id) async {
+    await client.dio.delete('${ApiConstants.loans}/$id');
+  }
 }

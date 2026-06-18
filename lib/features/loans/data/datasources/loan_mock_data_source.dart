@@ -13,6 +13,7 @@ import 'loan_remote_data_source.dart';
 class LoanMockDataSource implements LoanRemoteDataSource {
   static int _nextLoanId = 1;
   final List<Map<String, dynamic>> _savedLoans = [];
+  final Map<int, SimulationResultModel> _savedDetails = {};
 
   @override
   Future<List<VehicleModel>> getVehicles() async {
@@ -85,6 +86,7 @@ class LoanMockDataSource implements LoanRemoteDataSource {
       'amount_financed': r.amountFinanced,
       'status': r.status,
     });
+    _savedDetails[r.loanId!] = r;
     return r;
   }
 
@@ -92,6 +94,19 @@ class LoanMockDataSource implements LoanRemoteDataSource {
   Future<List<Map<String, dynamic>>> listLoans() async {
     await Future.delayed(const Duration(milliseconds: 150));
     return List<Map<String, dynamic>>.from(_savedLoans);
+  }
+
+  @override
+  Future<SimulationResultModel?> getLoanDetail(int id) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    return _savedDetails[id];
+  }
+
+  @override
+  Future<void> deleteLoan(int id) async {
+    await Future.delayed(const Duration(milliseconds: 150));
+    _savedLoans.removeWhere((it) => it['id'] == id);
+    _savedDetails.remove(id);
   }
 
   // --- núcleo financiero (replica el del backend) -----------------------

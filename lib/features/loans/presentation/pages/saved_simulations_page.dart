@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/brand_header.dart';
+import '../../../../core/theme/mobile_shell.dart';
 import '../../data/datasources/loan_remote_data_source.dart';
 import 'new_simulation_page.dart';
+import 'results_page.dart';
 
 class SavedSimulationsPage extends StatefulWidget {
   final LoanRemoteDataSource dataSource;
@@ -50,6 +52,48 @@ class _SavedSimulationsPageState extends State<SavedSimulationsPage> {
     _refresh();
   }
 
+  Future<void> _openDetail(int id) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+    final detail = await _remote.getLoanDetail(id);
+    if (!mounted) return;
+    Navigator.pop(context);
+    if (detail == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo cargar el detalle')),
+      );
+      return;
+    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ResultsPage(result: detail)),
+    );
+  }
+
+  Future<void> _confirmDelete(Map<String, dynamic> item) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Eliminar simulación'),
+        content: Text('¿Eliminar "${item['name']}"? Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.brandDanger),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await _remote.deleteLoan(item['id'] as int);
+    if (mounted) _refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,7 +103,9 @@ class _SavedSimulationsPageState extends State<SavedSimulationsPage> {
         icon: const Icon(Icons.add_rounded),
         label: const Text('Nueva simulación'),
       ),
-      body: RefreshIndicator(
+      body: MobileShell(
+        addBottomInset: true,
+        child: RefreshIndicator(
         onRefresh: _refresh,
         child: CustomScrollView(
           slivers: [
@@ -139,11 +185,16 @@ class _SavedSimulationsPageState extends State<SavedSimulationsPage> {
                   itemCount: _items.length,
                   itemBuilder: (_, i) {
                     final it = _items[i];
-                    return _SimulationTile(item: it);
+                    return _SimulationTile(
+                      item: it,
+                      onTap: () => _openDetail(it['id'] as int),
+                      onDelete: () => _confirmDelete(it),
+                    );
                   },
                 ),
               ),
           ],
+        ),
         ),
       ),
     );
@@ -152,7 +203,13 @@ class _SavedSimulationsPageState extends State<SavedSimulationsPage> {
 
 class _SimulationTile extends StatelessWidget {
   final Map<String, dynamic> item;
-  const _SimulationTile({required this.item});
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
+  const _SimulationTile({
+    required this.item,
+    required this.onTap,
+    required this.onDelete,
+  });
 
   Color _statusColor(String s) {
     switch (s) {
@@ -175,75 +232,78 @@ class _SimulationTile extends StatelessWidget {
     final amount = item['amount_financed'];
     final status = item['status']?.toString() ?? 'DRAFT';
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppTheme.brandPrimary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.directions_car_rounded,
-                color: AppTheme.brandPrimary,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${item['name']}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Financiado: $cur ${amount is num ? amount.toStringAsFixed(2) : amount}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _statusColor(status).withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: _statusColor(status),
-                    ),
-                  ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onDelete,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppTheme.brandPrimary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '#${item['id']}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppTheme.textSecondary,
-                  ),
+                child: const Icon(
+                  Icons.directions_car_rounded,
+                  color: AppTheme.brandPrimary,
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${item['name']}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: AppTheme.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Financiado: $cur ${amount is num ? amount.toStringAsFixed(2) : amount}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: _statusColor(status).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: _statusColor(status),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: 'Eliminar',
+                icon: const Icon(Icons.delete_outline_rounded,
+                    color: AppTheme.textSecondary),
+                onPressed: onDelete,
+              ),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppTheme.textSecondary),
+            ],
+          ),
         ),
       ),
     );
